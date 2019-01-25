@@ -86,12 +86,24 @@ EOF
 
 sudo chmod +x /tmp/azure_auth.sh
 
-sudo cat << EOF > /tmp/azure_secret.sh
+sudo cat << SECRET > /tmp/azure_secret.sh
+set -v
+export VAULT_ADDR="http://127.0.0.1:8200"
+
 vault secrets enable azure
 
 vault write azure/config subscription_id="${subscription_id}" tenant_id="${tenant_id}" client_id="${client_id}" client_secret="${client_secret}"
 
 vault write azure/roles/my-role ttl=1h application_object_id="${object_id}"
+
+vault write azure/roles/reader-role ttl=1h azure_roles=-<<EOF
+    [
+        {
+            "role_name": "Reader",
+            "scope":  "/subscriptions/${subscription_id}"
+        }
+    ]
 EOF
+SECRET
 
 sudo chmod +x /tmp/azure_secret.sh

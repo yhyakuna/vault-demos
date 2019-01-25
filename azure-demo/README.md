@@ -4,7 +4,7 @@ Terraform provisions Azure resources to demonstrate the following HashiCorp Vaul
 
 - [Auto-unsealing with Azure Key Vault](#auto-unseal-using-azure-key-vault)
 - [Azure auth method](#azure-auth-method)
-- [Azure secret engine](#azure-secrets-engine) 
+- [Azure secret engine](#azure-secrets-engine)
 
 
 # Prerequisites
@@ -16,7 +16,7 @@ to create a service principal and then configure in Terraform.
 
 You can obtain your **subscription ID** and **tenant ID** via Azure Portal or Azure CLI: `az login`
 
-It's probably easier to get the credential from Azure Portal. 
+It's probably easier to get the credential from Azure Portal.
 
 - **Subscription ID**: Navigate to the [Subscriptions blade within the Azure Portal](https://portal.azure.com/#blade/Microsoft_Azure_Billing/SubscriptionsBlade) and copy the **Subscription ID**  
 
@@ -67,9 +67,6 @@ Also, I ran into an issue with `Insufficient privileges to complete the operatio
 
     # Output provides the SSH instruction
     $ terraform apply -auto-approve
-
-    # Refresh to fetch the IP address
-    $ terraform refresh
     ...
     Outputs:
 
@@ -214,6 +211,8 @@ The `azure` auth method allows authentication against Vault using Azure Active D
 
 ## Azure Secrets Engine
 
+Vault Azure secrets engine dynamically generate Azure service principals and role assignments. Vault roles can be mapped to one or more Azure roles, or generate a new secret for an existing service principal. 
+
 1. Be sure to log into Vault using the generated initial root token:
 
     ```plaintext
@@ -225,11 +224,12 @@ The `azure` auth method allows authentication against Vault using Azure Active D
 1. Repace the object ID in `/tmp/azure_secret.sh`:
 
     ```plaintext
-    $ vi /tmp/azure_secret.sh
+    $ cd /tmp
+    $ sudo vi azure_secret.sh
 
     ...
     vault write azure/roles/my-role ttl=1h application_object_id=<REPLACE_THIS>
-
+    ...
     ```
 
 1. Execute the script
@@ -240,14 +240,10 @@ The `azure` auth method allows authentication against Vault using Azure Active D
     Success! Enabled the azure secrets engine at: azure/
     Success! Data written to: azure/config
     Success! Data written to: azure/roles/my-role
+    Success! Data written to: azure/roles/reader-role
     ```
 
-    In this example, I already have an existing service principal; therefore, I provided the SP app's object ID to define `my-role`. In this case, a new password will be dynamically generated instead of a new service principal.
-
-    Alternatively, you can use existing Azure roles.
-
-
-1. Generate a new credential 
+1. Generate a new credential for `my-role`
 
     ```plaintext
     $ vault read azure/creds/my-role
@@ -261,11 +257,35 @@ The `azure` auth method allows authentication against Vault using Azure Active D
     client_secret      08dabc6c-0d09-2763-7775-eaf7049c35a7
     ```
 
-    The generated secret (password) is valid for 1 hour. The password will be deleted when the lease is revoked.
+    In this example, I already have an existing service principal (`[env]-test-sp`). The Azure secrets engine dynamically genrates a new password which is good for 1 hour.
 
+1. Generate a new credential for `reader-role`
 
+    ```plaintext
+    $ vault read azure/creds/reader-role
+    Key                Value
+    ---                -----
+    lease_id           azure/creds/reader-role/YYUOnTAlpOYALwSEFX0U7Dwt
+    lease_duration     1h
+    lease_renewable    true
+    client_id          95d50df6-2dbe-4c8d-9880-ff9f59dd1c97
+    client_secret      d4a4f2f6-276f-bcb4-cc9c-e199414a6efd
+    ```
+
+    Instad, the `reader-role` is based on Azure's built-in role, "Reader" scoped to my subscription. Therefore, Azure secrets engine dynamically generates a service principal which is valid for 1 hour. 
+
+1.  Revoke the generated credentials
+
+    ```plaintext
+    $ vault lease revoke -prefix azure/creds
+    All revocation operations queued successfully! 
+    ```
+
+    This is good to show that Vault provides a break-glass procedure if a suspicious activity was detected.
 
 ## Clean up
+
+When you are done exploring, run `terraform destroy`
 
 ```plaintext
 $ terraform destroy -auto-approve

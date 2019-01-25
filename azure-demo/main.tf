@@ -37,7 +37,7 @@ resource "azurerm_key_vault" "vault" {
     object_id = "${data.azurerm_client_config.current.service_principal_object_id}"
 
     certificate_permissions = [
-      "get", 
+      "get",
       "list",
       "create",
       "delete",
@@ -213,7 +213,7 @@ resource "azurerm_storage_account" "tf_storageaccount" {
 # Create a new Service Principal App
 # -------------------------------------
 resource "azurerm_azuread_application" "test" {
-  name                       = "yh-azure-test"
+  name                       = "${var.environment}-test-sp"
   available_to_other_tenants = true
 }
 
@@ -249,7 +249,7 @@ resource "azurerm_virtual_machine" "tf_vm" {
     resource_group_name   = "${azurerm_resource_group.vault.name}"
     network_interface_ids = ["${azurerm_network_interface.tf_nic.id}"]
     vm_size               = "Standard_DS1_v2"
-    
+
     identity = {
       type = "SystemAssigned"
     }
@@ -292,17 +292,21 @@ resource "azurerm_virtual_machine" "tf_vm" {
     }
 }
 
+data "azurerm_public_ip" "tf_publicip" {
+  name                = "${azurerm_public_ip.tf_publicip.name}"
+  resource_group_name = "${azurerm_virtual_machine.tf_vm.resource_group_name}"
+}
+
 output "ip" {
-    value = "${azurerm_public_ip.tf_publicip.ip_address}"
+  value = "${data.azurerm_public_ip.tf_publicip.ip_address}"
 }
 
 output "ssh-addr" {
-    value = <<SSH
+  value = <<SSHADDR
 
     Connect to your virtual machine via SSH:
 
-    $ ssh azureuser@${azurerm_public_ip.tf_publicip.ip_address}
-    
-    SSH
-}
+    $ ssh azureuser@${data.azurerm_public_ip.tf_publicip.ip_address}
 
+    SSHADDR
+}
