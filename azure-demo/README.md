@@ -19,16 +19,20 @@ You can obtain your **subscription ID** and **tenant ID** via Azure Portal or Az
 It's probably easier to get the credential from Azure Portal. 
 
 - **Subscription ID**: Navigate to the [Subscriptions blade within the Azure Portal](https://portal.azure.com/#blade/Microsoft_Azure_Billing/SubscriptionsBlade) and copy the **Subscription ID**  
+
     ![Subscription ID](https://s3-us-west-1.amazonaws.com/education-yh/screenshots/vault-autounseal-azure-1.png)
 
 - **Tenant ID**: Navigate to the [Azure Active Directory > Properties](https://portal.azure.com/#blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/Properties) in the Azure Portal, and copy the **Directory ID** which is your tenant ID  
+
     ![Tenant ID](https://s3-us-west-1.amazonaws.com/education-yh/screenshots/vault-autounseal-azure-2.png)
 
 - **Client ID**: Same as the [**Application ID**](https://portal.azure.com/#blade/Microsoft_AAD_IAM/ApplicationsListBlade)
+
     ![Client ID](https://s3-us-west-1.amazonaws.com/education-yh/screenshots/vault-autounseal-azure-3.png)
 
 - **Client secret**: The [password (credential)](https://portal.azure.com/#blade/Microsoft_AAD_IAM/ApplicationsListBlade) set on your application
 
+<br>
 
 **NOTE:** It is important that your Service Principal app has appropriate role (e.g. "Owner") and API permissions.
 
