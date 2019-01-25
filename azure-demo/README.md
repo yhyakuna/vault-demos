@@ -236,9 +236,32 @@ The `azure` auth method allows authentication against Vault using Azure Active D
 
     ```plaintext
     $ ./azure_secret.sh
+
+    Success! Enabled the azure secrets engine at: azure/
+    Success! Data written to: azure/config
+    Success! Data written to: azure/roles/my-role
     ```
 
-    A new credential gets generated which is good for 1 hour.
+    In this example, I already have an existing service principal; therefore, I provided the SP app's object ID to define `my-role`. In this case, a new password will be dynamically generated instead of a new service principal.
+
+    Alternatively, you can use existing Azure roles.
+
+
+1. Generate a new credential 
+
+    ```plaintext
+    $ vault read azure/creds/my-role
+
+    Key                Value
+    ---                -----
+    lease_id           azure/creds/my-role/GTKS2xaqAVyKjZ8p4xSOJf85
+    lease_duration     1h
+    lease_renewable    true
+    client_id          b4407306-8386-4dd4-893b-e140eb57a036
+    client_secret      08dabc6c-0d09-2763-7775-eaf7049c35a7
+    ```
+
+    The generated secret (password) is valid for 1 hour. The password will be deleted when the lease is revoked.
 
 
 
