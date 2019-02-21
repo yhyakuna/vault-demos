@@ -219,19 +219,6 @@ Vault Azure secrets engine dynamically generate Azure service principals and rol
     $ vault login s.bRyEk2vIPrKfeldFZD5xFvUL
     ```
 
-1. I haven't quite figure this out, but `main.tf` fails to pull out the correct object ID.  So, you have to manually replace this value in the `/tmp/azure_secret.sh` file.  Go to [**Azure Portal**](https://portal.azure.com/#blade/Microsoft_AAD_IAM/ApplicationsListBlade) and find a generated app named, **`yh-azure-test`** and copy its **Object ID** (NOT the Application ID).
-
-1. Repace the object ID in `/tmp/azure_secret.sh`:
-
-    ```plaintext
-    $ cd /tmp
-    $ sudo vi azure_secret.sh
-
-    ...
-    vault write azure/roles/my-role ttl=1h application_object_id=<REPLACE_THIS>
-    ...
-    ```
-
 1. Execute the script
 
     ```plaintext
@@ -239,7 +226,6 @@ Vault Azure secrets engine dynamically generate Azure service principals and rol
 
     Success! Enabled the azure secrets engine at: azure/
     Success! Data written to: azure/config
-    Success! Data written to: azure/roles/my-role
     Success! Data written to: azure/roles/reader-role
     ```
 
