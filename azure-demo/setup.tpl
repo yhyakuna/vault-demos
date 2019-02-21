@@ -19,6 +19,7 @@ cat << EOF > /lib/systemd/system/vault.service
 Description=Vault Agent
 Requires=network-online.target
 After=network-online.target
+
 [Service]
 Restart=on-failure
 PermissionsStartOnly=true
@@ -28,6 +29,7 @@ ExecReload=/bin/kill -HUP $MAINPID
 KillSignal=SIGTERM
 User=azureuser
 Group=azureuser
+
 [Install]
 WantedBy=multi-user.target
 EOF
@@ -37,14 +39,12 @@ cat << EOF > /etc/vault.d/config.hcl
 storage "file" {
   path = "/opt/vault"
 }
+
 listener "tcp" {
   address     = "0.0.0.0:8200"
   tls_disable = 1
 }
-seal "azurekeyvault" {
-  vault_name     = "${vault_name}"
-  key_name       = "${key_name}"
-}
+
 ui=true
 disable_mlock = true
 EOF
@@ -59,6 +59,8 @@ cat << EOF > /etc/profile.d/vault.sh
 export VAULT_ADDR=http://127.0.0.1:8200
 export VAULT_SKIP_VERIFY=true
 export VAULT_SEAL_TYPE="azurekeyvault"
+export VAULT_AZUREKEYVAULT_VAULT_NAME="${vault_name}"
+export VAULT_AZUREKEYVAULT_KEY_NAME="${key_name}"
 export AZURE_TENANT_ID="${tenant_id}"
 export AZURE_CLIENT_ID="${client_id}"
 export AZURE_CLIENT_SECRET="${client_secret}"
@@ -94,8 +96,6 @@ export VAULT_ADDR="http://127.0.0.1:8200"
 vault secrets enable azure
 
 vault write azure/config subscription_id="${subscription_id}" tenant_id="${tenant_id}" client_id="${client_id}" client_secret="${client_secret}"
-
-vault write azure/roles/my-role ttl=1h application_object_id="${object_id}"
 
 vault write azure/roles/reader-role ttl=1h azure_roles=-<<EOF
     [
