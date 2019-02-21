@@ -42,9 +42,6 @@ listener "tcp" {
   tls_disable = 1
 }
 seal "azurekeyvault" {
-  client_id      = "${client_id}"
-  client_secret  = "${client_secret}"
-  tenant_id      = "${tenant_id}"
   vault_name     = "${vault_name}"
   key_name       = "${key_name}"
 }
@@ -61,6 +58,10 @@ sudo chmod -R 0644 /etc/vault.d/*
 cat << EOF > /etc/profile.d/vault.sh
 export VAULT_ADDR=http://127.0.0.1:8200
 export VAULT_SKIP_VERIFY=true
+export VAULT_SEAL_TYPE="azurekeyvault"
+export AZURE_TENANT_ID="${tenant_id}"
+export AZURE_CLIENT_ID="${client_id}"
+export AZURE_CLIENT_SECRET="${client_secret}"
 EOF
 
 systemctl enable vault
